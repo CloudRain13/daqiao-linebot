@@ -9,7 +9,6 @@ from linebot.models import (
 import os
 import sys
 
-
 app = Flask(__name__)
 
 # 安全地從環境變數讀取 LINE 憑證
@@ -27,7 +26,7 @@ def callback():
     signature = request.headers.get('X-Line-Signature', '')
     body = request.get_data(as_text=True)
 
-    # 加入 log：可以到 Vercel Logs 看請求內容
+    # 印出 log 可以在 Vercel logs 查看
     print(f"[Headers]: {request.headers}", file=sys.stderr)
     print(f"[Body]: {body}", file=sys.stderr)
 
@@ -110,5 +109,3 @@ def send_flex_menu(reply_token):
         }
     )
     line_bot_api.reply_message(reply_token, flex_message)
-
-
