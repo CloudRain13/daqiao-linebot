@@ -8,20 +8,21 @@ import os
 
 app = Flask(__name__)
 
-# 安全地從環境變數讀取 LINE 憑證
+# 從環境變數讀取 LINE Bot 憑證
 channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN')
 channel_secret = os.getenv('LINE_CHANNEL_SECRET')
 
 if channel_access_token is None or channel_secret is None:
-    raise Exception("❗請確認你已在 Vercel 設定環境變數 LINE_CHANNEL_ACCESS_TOKEN 和 LINE_CHANNEL_SECRET")
+    raise Exception("❗請在 Vercel 設定環境變數 LINE_CHANNEL_ACCESS_TOKEN 和 LINE_CHANNEL_SECRET")
 
 line_bot_api = LineBotApi(channel_access_token)
 handler = WebhookHandler(channel_secret)
 
 @app.route("/api", methods=['POST'])
 def callback():
-    signature = request.headers['X-Line-Signature']
+    signature = request.headers.get('X-Line-Signature', '')
     body = request.get_data(as_text=True)
+
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
