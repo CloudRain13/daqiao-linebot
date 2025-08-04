@@ -7,6 +7,7 @@ from linebot.models import (
     ButtonsTemplate, URIAction, FlexSendMessage
 )
 import os
+import sys
 
 
 app = Flask(__name__)
@@ -109,4 +110,5 @@ def send_flex_menu(reply_token):
         }
     )
     line_bot_api.reply_message(reply_token, flex_message)
+
 
