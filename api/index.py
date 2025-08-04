@@ -1,6 +1,3 @@
-# api/index.py
-
-from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import (
@@ -9,36 +6,30 @@ from linebot.models import (
     ButtonsTemplate, URIAction, FlexSendMessage
 )
 import os
-import sys
+import json
 
-# 初始化 Flask
-app = Flask(__name__)
-
-# 從環境變數讀取 channel secret 和 token
 channel_secret = os.getenv("LINE_CHANNEL_SECRET")
 channel_access_token = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
-
-if channel_secret is None or channel_access_token is None:
-    raise Exception("請設定 LINE_CHANNEL_SECRET 和 LINE_CHANNEL_ACCESS_TOKEN 環境變數")
 
 line_bot_api = LineBotApi(channel_access_token)
 handler = WebhookHandler(channel_secret)
 
-@app.route("/api", methods=['POST'])
-def webhook():
-    signature = request.headers.get("X-Line-Signature", "")
-    body = request.get_data(as_text=True)
-
-    # Debug log
-    print("[Headers]", request.headers, file=sys.stderr)
-    print("[Body]", body, file=sys.stderr)
+def handler_function(request):
+    signature = request.headers.get("x-line-signature", "")
+    body = request.body.decode()
 
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
-        abort(400)
+        return {
+            "statusCode": 400,
+            "body": json.dumps({"message": "Invalid signature"})
+        }
 
-    return "OK", 200
+    return {
+        "statusCode": 200,
+        "body": json.dumps({"message": "OK"})
+    }
 
 @handler.add(FollowEvent)
 def handle_follow(event):
@@ -108,6 +99,3 @@ def send_flex_menu(token):
         }
     )
     line_bot_api.reply_message(token, flex)
-
-# Vercel 部署需要這行
-app = app
