@@ -1,33 +1,36 @@
-# api/index.py
-
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import *
-
 import os
+import sys
 
 app = Flask(__name__)
 
-# 讀取 LINE 憑證（從 Vercel 環境變數）
+# 安全地從環境變數讀取 LINE 憑證
 channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN')
 channel_secret = os.getenv('LINE_CHANNEL_SECRET')
 
-if not channel_access_token or not channel_secret:
-    raise Exception("❗請確認 Vercel 上有設定 LINE_CHANNEL_ACCESS_TOKEN 與 LINE_CHANNEL_SECRET")
+if channel_access_token is None or channel_secret is None:
+    raise Exception("❗請確認你已在 Vercel 設定環境變數 LINE_CHANNEL_ACCESS_TOKEN 和 LINE_CHANNEL_SECRET")
 
 line_bot_api = LineBotApi(channel_access_token)
 handler = WebhookHandler(channel_secret)
 
 @app.route("/api", methods=['POST'])
 def callback():
-    signature = request.headers.get('X-Line-Signature')
+    signature = request.headers.get('X-Line-Signature', '')
     body = request.get_data(as_text=True)
+
+    # 加入 log：可以到 Vercel Logs 看請求內容
+    print(f"[Headers]: {request.headers}", file=sys.stderr)
+    print(f"[Body]: {body}", file=sys.stderr)
 
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
         abort(400)
+
     return 'OK'
 
 @handler.add(FollowEvent)
@@ -92,7 +95,7 @@ def send_flex_menu(reply_token):
                 "spacing": "sm",
                 "contents": [
                     {"type": "button", "style": "primary",
-                     "action": {"type": "message", "label": "🧩 參加解謎", "text": "我要解謎"}},
+                     "action": {"type": "message", "label": "🎩 參加解謎", "text": "我要解謎"}},
                     {"type": "button", "style": "secondary",
                      "action": {"type": "message", "label": "📍 認識大橋", "text": "我要認識大橋"}},
                     {"type": "button", "style": "link",
@@ -102,4 +105,3 @@ def send_flex_menu(reply_token):
         }
     )
     line_bot_api.reply_message(reply_token, flex_message)
-
