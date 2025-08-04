@@ -11,39 +11,39 @@ import sys
 
 app = Flask(__name__)
 
-# 安全地從環境變數讀取 LINE 憑證
-channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN')
-channel_secret = os.getenv('LINE_CHANNEL_SECRET')
+# 從環境變數讀取 channel token & secret
+channel_access_token = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
+channel_secret = os.getenv("LINE_CHANNEL_SECRET")
 
-if channel_access_token is None or channel_secret is None:
-    raise Exception("❗請確認你已在 Vercel 設定環境變數 LINE_CHANNEL_ACCESS_TOKEN 和 LINE_CHANNEL_SECRET")
+if not channel_access_token or not channel_secret:
+    raise Exception("❗請確認已設定環境變數：LINE_CHANNEL_ACCESS_TOKEN 和 LINE_CHANNEL_SECRET")
 
 line_bot_api = LineBotApi(channel_access_token)
 handler = WebhookHandler(channel_secret)
 
-@app.route("/api", methods=['POST'])
-def callback():
-    signature = request.headers.get('X-Line-Signature', '')
+@app.route("/api", methods=["POST"])
+def webhook():
+    signature = request.headers.get("X-Line-Signature", "")
     body = request.get_data(as_text=True)
 
-    # 印出 log 可以在 Vercel logs 查看
-    print(f"[Headers]: {request.headers}", file=sys.stderr)
-    print(f"[Body]: {body}", file=sys.stderr)
+    # log headers & body for debugging
+    print(f"[Headers] {request.headers}", file=sys.stderr)
+    print(f"[Body] {body}", file=sys.stderr)
 
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
         abort(400)
 
-    return 'OK'
+    return "OK"
 
 @handler.add(FollowEvent)
 def handle_follow(event):
     send_flex_menu(event.reply_token)
 
 @handler.add(MessageEvent, message=TextMessage)
-def handle_text(event):
-    text = event.message.text
+def handle_message(event):
+    text = event.message.text.strip()
     reply_token = event.reply_token
 
     if text in ["主選單", "menu", "Menu"]:
@@ -59,13 +59,13 @@ def handle_text(event):
         ))
     elif text == "追蹤我們":
         line_bot_api.reply_message(reply_token, TemplateSendMessage(
-            alt_text='社群連結',
+            alt_text="社群連結",
             template=ButtonsTemplate(
-                title='追蹤我們',
-                text='點選以下連結追蹤我們的社群平台：',
+                title="追蹤我們",
+                text="點選以下連結追蹤我們的社群平台：",
                 actions=[
-                    URIAction(label='Instagram', uri='https://www.instagram.com/你的IG'),
-                    URIAction(label='Facebook', uri='https://www.facebook.com/你的FB')
+                    URIAction(label="Instagram", uri="https://www.instagram.com/你的IG"),
+                    URIAction(label="Facebook", uri="https://www.facebook.com/你的FB")
                 ]
             )
         ))
@@ -74,7 +74,7 @@ def handle_text(event):
 
 def send_flex_menu(reply_token):
     flex_message = FlexSendMessage(
-        alt_text='大橋社區主選單',
+        alt_text="大橋社區主選單",
         contents={
             "type": "bubble",
             "hero": {
@@ -109,3 +109,6 @@ def send_flex_menu(reply_token):
         }
     )
     line_bot_api.reply_message(reply_token, flex_message)
+
+# 🔥 必加這行讓 Vercel 能識別 Flask app（解決 issubclass 錯誤）
+app = app
