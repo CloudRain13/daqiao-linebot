@@ -1,9 +1,13 @@
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
-from linebot.models import *
+from linebot.models import (
+    MessageEvent, TextMessage, FollowEvent,
+    TextSendMessage, StickerSendMessage, TemplateSendMessage,
+    ButtonsTemplate, URIAction, FlexSendMessage
+)
 import os
-import sys
+
 
 app = Flask(__name__)
 
@@ -105,3 +109,4 @@ def send_flex_menu(reply_token):
         }
     )
     line_bot_api.reply_message(reply_token, flex_message)
+
