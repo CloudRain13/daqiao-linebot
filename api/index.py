@@ -9,7 +9,6 @@ from linebot.models import (
 
 app = Flask(__name__)
 
-# 從環境變數讀取憑證
 channel_secret = os.getenv('LINE_CHANNEL_SECRET')
 channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN')
 
@@ -34,7 +33,6 @@ def webhook():
 
     return "OK", 200
 
-# 加入好友事件
 @handler.add(FollowEvent)
 def handle_follow(event):
     line_bot_api.reply_message(
@@ -42,7 +40,6 @@ def handle_follow(event):
         TextSendMessage(text="感謝加入大橋解謎遊戲 🧩 傳送貼圖即可開始遊戲！")
     )
 
-# 文字訊息事件
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_text = event.message.text
@@ -53,7 +50,6 @@ def handle_message(event):
     else:
         line_bot_api.reply_message(reply_token, TextSendMessage(text="請輸入「主選單」來查看功能喔～"))
 
-# 傳送主選單 Flex Message
 def send_flex_menu(reply_token):
     flex = {
         "type": "bubble",
