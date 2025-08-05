@@ -36,10 +36,11 @@ def handle_message(event):
         text = TextSendMessage(text='🎉 遊戲開始！請前往第一站：柑仔店。這是你的地圖：')
         # 3. 一張地圖圖卡（請先把 map1.png 放到公開網址）
         image = ImageSendMessage(
-            original_content_url='https://your-domain.com/maps/map1.png',
-            preview_image_url='https://your-domain.com/maps/map1.png'
+            original_content_url='https://engineering.linecorp.com/wp-content/uploads/2021/01/1-3-1024x307.png',
+            preview_image_url='https://engineering.linecorp.com/wp-content/uploads/2021/01/1-3-1024x307.png'
         )
         return line_bot_api.reply_message(event.reply_token, [sticker, text, image])
 
 if __name__ == "__main__":
     app.run(port=3000)
+
