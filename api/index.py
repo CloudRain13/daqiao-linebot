@@ -12,7 +12,7 @@ app.logger.setLevel("INFO")
 # 一定要在 Vercel Env 設好
 LINE_TOKEN  = os.environ["LINE_CHANNEL_ACCESS_TOKEN"]
 LINE_SECRET = os.environ["LINE_CHANNEL_SECRET"]
-MAP1_URL    = os.environ.get("MAP1_URL", "https://<your-domain>/maps/map1.png")
+MAP1_URL    = os.environ.get("MAP1_URL", "https://github.com/CloudRain13/daqiao-linebot/blob/main/public/maps/map1.png?raw=true")
 
 line_bot_api = LineBotApi(LINE_TOKEN)
 handler     = WebhookHandler(LINE_SECRET)
@@ -46,3 +46,4 @@ def handle_message(event):
 # 讓 Vercel 呼叫的入口函式，名稱必須是 handler
 def handler(request, context):
     return serverless_wsgi.handle_request(app, request, context)
+
